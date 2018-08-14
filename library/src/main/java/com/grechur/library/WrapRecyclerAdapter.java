@@ -3,6 +3,7 @@ package com.grechur.library;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,10 +54,12 @@ public class WrapRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+
         if(position<mHeaderViews.size()){
             return;
         }
         final int adjPosition = position - mHeaderViews.size();
+        Log.e("TAG","onBindViewHolder"+adjPosition);
         int adapterCount = mAdapter.getItemCount();
         if(adjPosition < adapterCount){
             mAdapter.onBindViewHolder(holder,adjPosition);

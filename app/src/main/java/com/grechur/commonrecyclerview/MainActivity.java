@@ -75,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
             public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                Log.e("TAG","getMovementFlags");
                 int currentSwapPosition = viewHolder.getAdapterPosition();
                 if(currentSwapPosition<recycler_view.getHeadersCount()){
                     return 0;
@@ -93,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-
+                Log.e("TAG","onMove");
                 //原来的位置
                 int fromPosition = viewHolder.getAdapterPosition();
                 int fDic = viewHolder.getAdapterPosition()-recycler_view.getHeadersCount();
@@ -119,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                Log.e("TAG","onSelectedChanged");
                 //不在正常状态时，改变背景颜色
                 if(actionState!=ItemTouchHelper.ACTION_STATE_IDLE){
                     viewHolder.itemView.setBackgroundColor(Color.GRAY);
@@ -129,24 +131,31 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                Log.e("TAG","clearView");
                 //动画执行完毕
                 viewHolder.itemView.setBackgroundColor(Color.WHITE);
                 //侧滑删除有些条目出不来
                 viewHolder.itemView.setTranslationX(0);
+                mAdapter.notifyDataSetChanged();
             }
 
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                Log.e("TAG","onSwiped");
                 //侧滑执行完毕，做操作（例如清除侧滑的数据）
                 int currentSwapPosition = viewHolder.getAdapterPosition();
                 if(currentSwapPosition>=recycler_view.getHeadersCount()) {
-
                     int position = currentSwapPosition-recycler_view.getHeadersCount();
-                    mData.remove(position);
                     mAdapter.notifyItemRemoved(currentSwapPosition);
+                    mData.remove(position);
 
                 }
+            }
+
+            @Override
+            public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
+                Log.e("TAG","onMoved");
             }
         });
         itemTouchHelper.attachToRecyclerView(recycler_view);
