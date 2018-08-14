@@ -3,6 +3,7 @@ package com.grechur.library;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
@@ -59,7 +60,7 @@ public class WrapRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             return;
         }
         final int adjPosition = position - mHeaderViews.size();
-        Log.e("TAG","onBindViewHolder"+adjPosition);
+//        Log.e("TAG","onBindViewHolder"+adjPosition);
         int adapterCount = mAdapter.getItemCount();
         if(adjPosition < adapterCount){
             mAdapter.onBindViewHolder(holder,adjPosition);
@@ -184,6 +185,24 @@ public class WrapRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
                 }
             });
         }
+    }
+
+    /**
+     * 解决StaggeredGridLayoutManager添加头部和底部不占用一行的问题
+     * @param holder
+     */
+    @Override
+    public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        if(getHeadersCount()>0){
+            ViewGroup.LayoutParams lp = holder.itemView.getLayoutParams();
+            if(lp != null
+                    && lp instanceof StaggeredGridLayoutManager.LayoutParams) {
+                StaggeredGridLayoutManager.LayoutParams p = (StaggeredGridLayoutManager.LayoutParams) lp;
+                p.setFullSpan(holder.getLayoutPosition() == 0);
+            }
+        }
+
     }
 
     /**

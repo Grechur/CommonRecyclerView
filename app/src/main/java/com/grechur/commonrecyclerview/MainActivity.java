@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -44,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         mAdapter = new MyAdapter(this,mData);
 
 
-        recycler_view.setLayoutManager(new LinearLayoutManager(this));
+        recycler_view.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
         recycler_view.setAdapter(mAdapter);
 
         final View view = LayoutInflater.from(this).inflate(R.layout.layout_wrap_item,recycler_view,false);
@@ -83,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
                 int swapFlag = ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT;
 
                 int dragFlag = 0;
-                if(recyclerView.getLayoutManager() instanceof GridLayoutManager){
+                if(recyclerView.getLayoutManager() instanceof GridLayoutManager||recyclerView.getLayoutManager() instanceof StaggeredGridLayoutManager){
                     dragFlag = ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT|ItemTouchHelper.UP|ItemTouchHelper.DOWN;
                 }else{
                     dragFlag = ItemTouchHelper.UP|ItemTouchHelper.DOWN;
@@ -94,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                Log.e("TAG","onMove");
+//                Log.e("TAG","onMove");
                 //原来的位置
                 int fromPosition = viewHolder.getAdapterPosition();
                 int fDic = viewHolder.getAdapterPosition()-recycler_view.getHeadersCount();
@@ -120,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-                Log.e("TAG","onSelectedChanged");
+//                Log.e("TAG","onSelectedChanged");
                 //不在正常状态时，改变背景颜色
                 if(actionState!=ItemTouchHelper.ACTION_STATE_IDLE){
                     viewHolder.itemView.setBackgroundColor(Color.GRAY);
@@ -131,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                Log.e("TAG","clearView");
+//                Log.e("TAG","clearView");
                 //动画执行完毕
                 viewHolder.itemView.setBackgroundColor(Color.WHITE);
                 //侧滑删除有些条目出不来
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                Log.e("TAG","onSwiped");
+//                Log.e("TAG","onSwiped");
                 //侧滑执行完毕，做操作（例如清除侧滑的数据）
                 int currentSwapPosition = viewHolder.getAdapterPosition();
                 if(currentSwapPosition>=recycler_view.getHeadersCount()) {
@@ -155,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onMoved(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, int fromPos, RecyclerView.ViewHolder target, int toPos, int x, int y) {
-                Log.e("TAG","onMoved");
+//                Log.e("TAG","onMoved");
             }
         });
         itemTouchHelper.attachToRecyclerView(recycler_view);
