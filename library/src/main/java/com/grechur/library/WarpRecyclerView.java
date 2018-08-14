@@ -12,12 +12,13 @@ import android.view.View;
 
 public class WarpRecyclerView extends RecyclerView{
     //通用adapter
-    private WrapRecyclerAdapter mAdapter;
+    private WrapRecyclerAdapter mWrapAdapter;
 
     // 增加一些通用功能
     // 空列表数据应该显示的空View
     // 正在加载数据页面，也就是正在获取后台接口页面
     private View mEmptyView, mLoadingView;
+    private Adapter mAdapter;
 
     public WarpRecyclerView(Context context) {
         this(context,null);
@@ -40,16 +41,19 @@ public class WarpRecyclerView extends RecyclerView{
             mAdapter = null;
         }
 
+        this.mAdapter = adapter;
+
         if(adapter instanceof WrapRecyclerAdapter){
-            mAdapter  = (WrapRecyclerAdapter) adapter;
+            mWrapAdapter  = (WrapRecyclerAdapter) adapter;
         }else{
-            mAdapter = new WrapRecyclerAdapter(adapter);
+            mWrapAdapter = new WrapRecyclerAdapter(adapter);
         }
-        super.setAdapter(mAdapter);
-        adapter.registerAdapterDataObserver(mDataObserver);
+        super.setAdapter(mWrapAdapter);
+        // 注册一个观察者
+        mAdapter.registerAdapterDataObserver(mDataObserver);
 
         // 解决GridLayout添加头部和底部也要占据一行
-        mAdapter.adjustSpanSize(this);
+        mWrapAdapter.adjustSpanSize(this);
 
         // 加载数据页面
         if (mLoadingView != null && mLoadingView.getVisibility() == View.VISIBLE) {
@@ -57,11 +61,11 @@ public class WarpRecyclerView extends RecyclerView{
         }
 
         if (mItemClickListener != null) {
-            mAdapter.setOnItemClickListener(mItemClickListener);
+            mWrapAdapter.setOnItemClickListener(mItemClickListener);
         }
 
         if (mLongClickListener != null) {
-            mAdapter.setOnLongClickListener(mLongClickListener);
+            mWrapAdapter.setOnLongClickListener(mLongClickListener);
         }
     }
 
@@ -71,8 +75,8 @@ public class WarpRecyclerView extends RecyclerView{
      */
     public void addHeaderView(View view){
         //不要重复加入
-        if(mAdapter!=null) {
-            mAdapter.addHeaderView(view);
+        if(mWrapAdapter!=null) {
+            mWrapAdapter.addHeaderView(view);
         }
     }
 
@@ -81,8 +85,8 @@ public class WarpRecyclerView extends RecyclerView{
      * @param view
      */
     public void removeHeaderView(View view){
-        if(mAdapter!=null) {
-            mAdapter.removeHeaderView(view);
+        if(mWrapAdapter!=null) {
+            mWrapAdapter.removeHeaderView(view);
         }
     }
 
@@ -92,8 +96,8 @@ public class WarpRecyclerView extends RecyclerView{
      */
     public void addFooterView(View view){
         //不要重复加入
-        if(mAdapter!=null) {
-            mAdapter.addFooterView(view);
+        if(mWrapAdapter!=null) {
+            mWrapAdapter.addFooterView(view);
         }
     }
 
@@ -102,50 +106,83 @@ public class WarpRecyclerView extends RecyclerView{
      * @param view
      */
     public void removeFooterView(View view){
-        if(mAdapter!=null) {
-            mAdapter.removeFooterView(view);
+        if(mWrapAdapter!=null) {
+            mWrapAdapter.removeFooterView(view);
         }
+    }
+
+    /**
+     * 得到头部view的个数
+     * @return
+     */
+    public int getHeadersCount(){
+        return mWrapAdapter.getHeadersCount();
+    }
+
+    /**
+     * 得到底部view的个数
+     * @return
+     */
+    public int getFootersCount(){
+        return mWrapAdapter.getFootersCount();
     }
 
     private AdapterDataObserver mDataObserver = new AdapterDataObserver() {
         @Override
         public void onChanged() {
-            super.onChanged();
-            mAdapter.notifyDataSetChanged();
-            dataChanged();
-        }
+            if (mAdapter == null) return;
+            // 观察者  列表Adapter更新 包裹的也需要更新不然列表的notifyDataSetChanged没效果
+            if (mWrapAdapter != mAdapter)
+                mWrapAdapter.notifyDataSetChanged();
 
-        @Override
-        public void onItemRangeChanged(int positionStart, int itemCount) {
-            mAdapter.notifyItemRangeChanged(positionStart, itemCount);
-            dataChanged();
-        }
-
-        @Override
-        public void onItemRangeChanged(int positionStart, int itemCount, @Nullable Object payload) {
-            mAdapter.notifyItemRangeChanged(positionStart, itemCount, payload);
-            dataChanged();
-        }
-
-        @Override
-        public void onItemRangeInserted(int positionStart, int itemCount) {
-            mAdapter.notifyItemRangeInserted(positionStart, itemCount);
             dataChanged();
         }
 
         @Override
         public void onItemRangeRemoved(int positionStart, int itemCount) {
-            mAdapter.notifyItemRangeRemoved(positionStart, itemCount);
+            if (mAdapter == null) return;
+            // 观察者  列表Adapter更新 包裹的也需要更新不然列表的notifyDataSetChanged没效果
+            if (mWrapAdapter != mAdapter)
+                mWrapAdapter.notifyItemRemoved(positionStart);
             dataChanged();
         }
 
         @Override
         public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-            mAdapter.notifyItemMoved(fromPosition, toPosition);
+            if (mAdapter == null) return;
+            // 观察者  列表Adapter更新 包裹的也需要更新不然列表的notifyItemMoved没效果
+            if (mWrapAdapter != mAdapter)
+                mWrapAdapter.notifyItemMoved(fromPosition, toPosition);
+            dataChanged();
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount) {
+            if (mAdapter == null) return;
+            // 观察者  列表Adapter更新 包裹的也需要更新不然列表的notifyItemChanged没效果
+            if (mWrapAdapter != mAdapter)
+                mWrapAdapter.notifyItemChanged(positionStart);
+            dataChanged();
+        }
+
+        @Override
+        public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
+            if (mAdapter == null) return;
+            // 观察者  列表Adapter更新 包裹的也需要更新不然列表的notifyItemChanged没效果
+            if (mWrapAdapter != mAdapter)
+                mWrapAdapter.notifyItemChanged(positionStart, payload);
+            dataChanged();
+        }
+
+        @Override
+        public void onItemRangeInserted(int positionStart, int itemCount) {
+            if (mAdapter == null) return;
+            // 观察者  列表Adapter更新 包裹的也需要更新不然列表的notifyItemInserted没效果
+            if (mWrapAdapter != mAdapter)
+                mWrapAdapter.notifyItemInserted(positionStart);
             dataChanged();
         }
     };
-
     /**
      * 添加一个空列表数据页面
      */
@@ -164,7 +201,7 @@ public class WarpRecyclerView extends RecyclerView{
      * Adapter数据改变的方法
      */
     private void dataChanged() {
-        if (mAdapter.getItemCount() == 0) {
+        if (mWrapAdapter.getItemCount() == 0) {
             // 没有数据
             if (mEmptyView != null) {
                 mEmptyView.setVisibility(VISIBLE);
@@ -183,16 +220,16 @@ public class WarpRecyclerView extends RecyclerView{
     public void setOnItemClickListener(OnItemClickListener itemClickListener) {
         this.mItemClickListener = itemClickListener;
 
-        if (mAdapter != null) {
-            mAdapter.setOnItemClickListener(mItemClickListener);
+        if (mWrapAdapter != null) {
+            mWrapAdapter.setOnItemClickListener(mItemClickListener);
         }
     }
 
     public void setOnLongClickListener(OnItemLongClickListener longClickListener) {
         this.mLongClickListener = longClickListener;
 
-        if (mAdapter != null) {
-            mAdapter.setOnLongClickListener(mLongClickListener);
+        if (mWrapAdapter != null) {
+            mWrapAdapter.setOnLongClickListener(mLongClickListener);
         }
     }
 

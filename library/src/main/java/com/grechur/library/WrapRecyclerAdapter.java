@@ -16,8 +16,8 @@ public class WrapRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     //本身的adapter
     private RecyclerView.Adapter mAdapter;
 
-    private int HEADERTYPE =100000000;
-    private int FOOTERTYPE = 20000000;
+    private int HEADERTYPE = 100000000;
+    private int FOOTERTYPE = 200000000;
 
     public WrapRecyclerAdapter(RecyclerView.Adapter adapter){
         mAdapter = adapter;
@@ -145,6 +145,22 @@ public class WrapRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             mFooterViews.removeAt(mFooterViews.indexOfValue(view));
             notifyDataSetChanged();
         }
+    }
+
+    /**
+     * 得到头部view的个数
+     * @return
+     */
+    public int getHeadersCount(){
+        return mHeaderViews.size();
+    }
+
+    /**
+     * 得到底部view的个数
+     * @return
+     */
+    public int getFootersCount(){
+        return mFooterViews.size();
     }
 
     /**

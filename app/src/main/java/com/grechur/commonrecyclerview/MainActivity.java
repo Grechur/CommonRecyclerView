@@ -1,11 +1,16 @@
 package com.grechur.commonrecyclerview;
 
 import android.database.DataSetObserver;
+import android.graphics.Color;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +25,7 @@ import com.grechur.library.WarpRecyclerView;
 import com.grechur.library.WrapRecyclerAdapter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -32,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         recycler_view = findViewById(R.id.recycler_view);
         mData = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             mData.add(i+"");
         }
         mAdapter = new MyAdapter(this,mData);
@@ -56,15 +62,94 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-        recycler_view.setOnLongClickListener(new OnItemLongClickListener() {
+//        recycler_view.setOnLongClickListener(new OnItemLongClickListener() {
+//            @Override
+//            public boolean onLongClick(int position) {
+//                Toast.makeText(MainActivity.this,"删除"+mData.get(position),Toast.LENGTH_SHORT).show();
+//                mData.remove(position);
+//                mAdapter.notifyDataSetChanged();
+//                return false;
+//            }
+//        });
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.Callback() {
             @Override
-            public boolean onLongClick(int position) {
-                Toast.makeText(MainActivity.this,"删除"+mData.get(position),Toast.LENGTH_SHORT).show();
-                mData.remove(position);
-                mAdapter.notifyDataSetChanged();
+            public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                int currentSwapPosition = viewHolder.getAdapterPosition();
+                if(currentSwapPosition<recycler_view.getHeadersCount()){
+                    return 0;
+                }
+                int swapFlag = ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT;
+
+                int dragFlag = 0;
+                if(recyclerView.getLayoutManager() instanceof GridLayoutManager){
+                    dragFlag = ItemTouchHelper.LEFT|ItemTouchHelper.RIGHT|ItemTouchHelper.UP|ItemTouchHelper.DOWN;
+                }else{
+                    dragFlag = ItemTouchHelper.UP|ItemTouchHelper.DOWN;
+                }
+
+                return makeMovementFlags(dragFlag,swapFlag);
+            }
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+
+                //原来的位置
+                int fromPosition = viewHolder.getAdapterPosition();
+                int fDic = viewHolder.getAdapterPosition()-recycler_view.getHeadersCount();
+                //目标位置
+                int targetPosition = target.getAdapterPosition();
+                int tDic = target.getAdapterPosition()-recycler_view.getHeadersCount();
+//                Log.e("TAG","fromPosition-->"+fromPosition+"targetPosition-->"+targetPosition);
+
+                //有头部，操作的mdata，要先去掉头部占的位置
+                if(fDic>tDic){
+                    for (int i = fDic; i > tDic&&tDic>=0; i--) {
+                        Collections.swap(mData,i,i-1);
+                    }
+                }else{
+                    for (int i = fDic; i < tDic; i++) {
+                        Collections.swap(mData,i,i+1);
+                    }
+                }
+                mAdapter.notifyItemMoved(fromPosition,targetPosition);
+
                 return false;
             }
+
+            @Override
+            public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                //不在正常状态时，改变背景颜色
+                if(actionState!=ItemTouchHelper.ACTION_STATE_IDLE){
+                    viewHolder.itemView.setBackgroundColor(Color.GRAY);
+                }
+
+
+            }
+
+            @Override
+            public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                //动画执行完毕
+                viewHolder.itemView.setBackgroundColor(Color.WHITE);
+                //侧滑删除有些条目出不来
+                viewHolder.itemView.setTranslationX(0);
+            }
+
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                //侧滑执行完毕，做操作（例如清除侧滑的数据）
+                int currentSwapPosition = viewHolder.getAdapterPosition();
+                if(currentSwapPosition>=recycler_view.getHeadersCount()) {
+
+                    int position = currentSwapPosition-recycler_view.getHeadersCount();
+                    mData.remove(position);
+                    mAdapter.notifyItemRemoved(currentSwapPosition);
+
+                }
+            }
         });
+        itemTouchHelper.attachToRecyclerView(recycler_view);
 
     }
     public void onClick(View view){
