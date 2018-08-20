@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 
+import com.grechur.library.MultiTypeSupport;
 import com.grechur.library.OnItemClickListener;
 import com.grechur.library.OnItemLongClickListener;
 import com.grechur.library.WarpRecyclerView;
@@ -31,7 +32,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     WarpRecyclerView recycler_view;
-    private List<String> mData;
+    private List<User> mData;
     private MyAdapter mAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,12 +41,24 @@ public class MainActivity extends AppCompatActivity {
         recycler_view = findViewById(R.id.recycler_view);
         mData = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
-            mData.add(i+"");
+            User user = new User();
+            user.name = i+"";
+            mData.add(user);
         }
-        mAdapter = new MyAdapter(this,mData);
+//        mAdapter = new MyAdapter(this, mData, R.layout.layout_recycle_item);
+
+        mAdapter = new MyAdapter(this, mData, new MultiTypeSupport() {
+            @Override
+            public int getLayoutId(Object item, int position) {
+                if(position%2 == 1){
+                    return R.layout.layout_recycle_item;
+                }
+                return R.layout.layout_right_recycle_item;
+            }
+        });
 
 
-        recycler_view.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
+        recycler_view.setLayoutManager(new LinearLayoutManager(this));
         recycler_view.setAdapter(mAdapter);
 
         final View view = LayoutInflater.from(this).inflate(R.layout.layout_wrap_item,recycler_view,false);
@@ -59,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         recycler_view.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(int position) {
-                Toast.makeText(MainActivity.this,mData.get(position),Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this,mData.get(position).toString(),Toast.LENGTH_SHORT).show();
 
             }
         });

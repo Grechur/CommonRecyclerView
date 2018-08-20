@@ -94,7 +94,7 @@ public class WrapRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         final int adjPosition = position - mHeaderViews.size();
         int adapterCount = mAdapter.getItemCount();
         if(adjPosition < adapterCount){
-            return super.getItemViewType(position);
+            return mAdapter.getItemViewType(adjPosition);
         }
 
         return mFooterViews.keyAt(adjPosition-adapterCount);
